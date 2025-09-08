@@ -1,19 +1,24 @@
 #!/bin/bash
 
-# Usage: ./je-deployment/setup_script.sh <dockerhub-username> <dockerhub-password>
+# Usage: ./je-deployment/setup_script.sh <dockerhub-username> <dockerhub-password> <shared_folder_name>
 
 
 # Exit on error
 set -e
 
-# initial checks
+# === CONFIGURATION ===
+SHARE_NAME="$3"
+SHARE_PATH="/home/shares/$SHARE_NAME"
+WINDOWS_GROUP_NAME="windowsgroup"
+DEST_DIR="$SHARE_PATH/"
+
 if [ "$(id -u)" -ne 0 ]; then
     echo "This script must be run as root." >&2
     exit 1
 fi
 
-if [ "$#" -ne 2 ]; then
-  echo "Usage: $0 <username> <password>"
+if [ "$#" -ne 3 ]; then
+  echo "Usage: $0 <username> <password> <shared_folder>"
   exit 1
 fi
 
@@ -42,6 +47,44 @@ if ! command -v docker &> /dev/null; then
     apt-get install -y docker-ce docker-ce-cli containerd.io
 fi
 
+echo "=== Installing Samba ==="
+if ! command -v smbd &> /dev/null; then
+    apt-get update
+    apt-get install -y libcups2 samba samba-common cups
+fi
+
+# create shared directory
+echo "=== Creating and configurating Samba Folder ==="
+mkdir -p "$DEST_DIR"
+chown -R root:users "$DEST_DIR"
+chmod -R ug+rwx,o+rx-w "$DEST_DIR"
+
+# add Samba share to config if not already present
+# execute permissions required on directory mask to cd into them
+if ! grep -q "^\[$SHARE_NAME\]" /etc/samba/smb.conf; then
+    echo "Adding Samba configuration..."
+    echo "
+[global]
+    workgroup = $GROUP_NAME
+    server string = Samba Server %v
+    netbios name = debian
+    security = user
+    map to guest = bad user
+    dns proxy = no
+
+[$SHARE_NAME]
+    path = $SHARE_PATH
+    force group = users
+    create mask = 0660
+    directory mask = 0771
+    browsable =yes
+    writable = yes
+    guest ok = yes
+    " | tee -a /etc/samba/smb.conf > /dev/null
+        systemctl restart smbd
+fi
+
+
 echo "=== Logging into Docker Hub ==="
 
 DOCKER_USERNAME="$1"
@@ -50,9 +93,9 @@ DOCKER_PASSWORD="$2"
 echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
 
 if [ $? -eq 0 ]; then
-  echo "DockerHub login successful"
+  echo "Docker login successful"
 else
-  echo "DockerHub login failed" >&2
+  echo "Docker login failed" >&2
   exit 1
 fi
 
@@ -81,7 +124,7 @@ apt install -y python3-venv python3-pip
 
 # i move inside the folder
 cd je-deployment
-# Create virtual environment if it doesn't exist, it includes dependencies of both scripts 
+# Create virtual environment if it doesn't exist
 if [ ! -d ".venv" ]; then
     python3 -m venv ".venv"
 fi
@@ -90,15 +133,11 @@ source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# launching the script that prepares all the config folders
-python script1.py
-echo "=== First Python script executed ==="
+# launching the script
+python dockercompose_generator.py $DOCKER_USERNAME
 
-# launching the script that prepares the docker compose
-python dockercompose_generator.py
-echo "=== Second Python script executed ==="
-
+echo "=== Python script executed ==="
 # i move outside the folder again
 cd ..
 
-echo "Setup complete! Scripts executed correctly and logged in DockerHub - you can delete the installation folder now"
+echo "Setup complete! Samba shared folder configured at $SHARE_PATH, created Docker compose file and logged in Docker Hub"
