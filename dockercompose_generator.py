@@ -89,7 +89,7 @@ def handleCommonConfig():
                 'retries': 3,
                 'start_period': '20s'
             },
-            'volumes': ['./tasker-logs:/app/dist/logs', ],
+            'volumes': ['./tasker-logs:/app/dist/logs', './backend-logs:/backend-logs' ],
             'ports': ['4000:4000'],
             'restart': 'always',
             'networks': ['job-recipe-orchestrator']
@@ -107,8 +107,9 @@ def handleCommonConfig():
                 'start_period': '20s'
             },
             'volumes': [
-                './orchestrator-logs:/logs', 'shared_token:/app/recipe_token', 
-                '/app/node_modules', 'converted_output:/app/converted-output'],
+                './backend-logs:/logs', 'shared_token:/app/recipe_token', 
+                '/app/node_modules', 'converted_output:/app/converted-output',
+                'configs/prisma_schema:/app/prisma'],
             'ports': ['3000:3000'],
             'command': ['sh -c "npm run db:push && npm start"'],
             'restart': 'always',
