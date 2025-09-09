@@ -91,7 +91,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 # launching the script that prepares all the config folders
-python script1.py
+python config_files_manager.py
 echo "=== First Python script executed ==="
 
 # launching the script that prepares the Prisma file
