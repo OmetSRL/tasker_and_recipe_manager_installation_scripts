@@ -1,14 +1,13 @@
 import os
-import re
 import yaml
 import sys
+import json 
 
-if len(sys.argv) < 2:
-    print("Error: Missing required parameter.", file=sys.stderr)
-    sys.exit(1)
-else:
-    docker_hub_account = sys.argv[1]
+parent_folder = "../configs"
 
+# reading the config file
+with open("../input_config.json", "r") as f:
+    input_config = json.load(f)
 
 # --- Custom scalar string for folded formatting ---
 class FoldedScalarString(str):
@@ -42,99 +41,112 @@ def clean_folded_string(input_str):
 # Directory containing config files
 input_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'configs')
 
-
-# Pattern to match config files like config-nginx-1.json, config-redis-2.json, etc.
-pattern = re.compile(r'^config-([\w\d\-]+)-\d+\.json$')
-
 services = {}
 
 # Adding custom ones
-services['mongo_db'] = {
-    'image': 'mongo:4.4',
-    'container_name': 'mongo_db',
+services['postgres-db'] = {
+    'image': 'postgres:15',
+    'container_name': 'postgres-db',
     'healthcheck': {
-      'test': ["CMD", "mongosh", "--eval", "\'db.runCommand(\\\"ping\\\").ok\'", "--quiet"],
-      'interval': '10s',
+      'test': ["CMD", "pg_isready", "-U", "postgres"],
+      'interval': '5s',
       'timeout': '5s',
-      'retries': 3,
+      'retries': 10,
       'start_period': '20s'
     },
-    'volumes': ['mongodb_data:/data/db'],
+    'volumes': ['postgres_data:/var/lib/postgresql/data'],
     'restart': 'always',
-    'networks': ['recepy-manager']
-}
-
-services['orchestrator'] = {
-    'container_name': 'orchestrator',
-    'image': f'{docker_hub_account}/orchestrator',
-    # 'volumes': [
-    #     f"{input_folder}/config-orchestrator-1.json:/app/config/config.json"
-    # ],
-    'healthcheck': {
-        'test': clean_folded_string(
-            "curl -fsSL http://localhost:3000/api/health &&\n"
-            "curl -fsSL http://localhost:3001/api/health\n"
-        ),
-        'interval': '10s',
-        'timeout': '5s',
-        'retries': 3,
-        'start_period': '20s'
-    },
-    'volumes': ['/home/shares/csv_import/:/home/shares/csv_import', 
-                './configs/config-orchestrator-1.json:/app/config/config.json'],
-    'ports': ['3000:3000', '4000:4000'],
-    'restart': 'always',
-    'networks': ['recepy-manager']
+    'networks': ['job-recipe-orchestrator']
 }
 
 
-for filename in os.listdir(input_folder):
-    # i skip the orchestrator config file since it's custom handled
-    if 'orchestrator' in filename:
-        continue
-
-    match = pattern.match(filename)
-    if match:
-        # Extract the image name (e.g., modbus_rw, opcua_rw)
-        image = match.group(1)
-
-        # Create a unique service name based on the image name and config file identifier
-        # Extract 1, 2, etc.
-        config_identifier = filename.split('-')[-1].split('.')[0]
-        service_name = f"{image}_{config_identifier}"
-
-        # Add the service with the config file mounted
-        services[service_name] = {
-            'container_name': service_name,
-            'image': f'{docker_hub_account}/'+image,
-            'volumes': [
-                f"./configs/{filename}:/app/config.json"
-            ],
+def handleCommonConfig():
+    if input_config.config_fe_be.image_name_fe_recipe != "":
+        services["recipe_manager"] = {
+            'image': input_config.config_fe_be.image_name_fe_recipe,
+            'container_name': 'recipe_manager',
             'healthcheck': {
-                'test': clean_folded_string(
-                    "curl -fsSL http://localhost:5000/api/health\n"
-                ),
-                'interval': '10s',
+                'test': ["CMD", "curl", "-f", "https://localhost:5000/"],
+                'interval': '30s',
                 'timeout': '5s',
                 'retries': 3,
                 'start_period': '20s'
             },
+            'volumes': ['shared_token:/app/recipe_token'],
+            'ports': ['5000:5000'],
             'restart': 'always',
-            'networks': ['recepy-manager']
+            'networks': ['job-recipe-orchestrator']
         }
+        
+    if input_config.config_fe_be.image_name_fe_job != "":
+        services["tasker"] = {
+            'image': input_config.config_fe_be.image_name_fe_job,
+            'container_name': 'tasker',
+            'healthcheck': {
+                'test': ["CMD", "curl", "-f", "https://localhost:4000/"],
+                'interval': '30s',
+                'timeout': '5s',
+                'retries': 3,
+                'start_period': '20s'
+            },
+            'volumes': ['./tasker-logs:/app/dist/logs', ],
+            'ports': ['4000:4000'],
+            'restart': 'always',
+            'networks': ['job-recipe-orchestrator']
+        }
+    
+    if input_config.config_fe_be.image_name_be != "":
+        services["orchestrator"] = {
+            'image': input_config.config_fe_be.image_name_be,
+            'container_name': 'orchestrator',
+            'healthcheck': {
+                'test': ["curl -fsSL http://localhost:5000/api/health"],
+                'interval': '30s',
+                'timeout': '5s',
+                'retries': 3,
+                'start_period': '20s'
+            },
+            'volumes': [
+                './orchestrator-logs:/logs', 'shared_token:/app/recipe_token', 
+                '/app/node_modules', 'converted_output:/app/converted-output'],
+            'ports': ['3000:3000'],
+            'command': ['sh -c "npm run db:push && npm start"'],
+            'restart': 'always',
+            'networks': ['job-recipe-orchestrator']
+        }
+    
 
+handleCommonConfig()
+
+for rw_name, rw_values in input_config.rw_configs.items():
+    
+    folder_path = os.path.join(parent_folder, rw_name) 
+    file_path = os.path.join(folder_path, "config.json")
+    
+    if os.path.isfile(file_path):
+        services[rw_name] = {
+            'image': rw_values.image_name,
+            'container_name': rw_values.image_name,
+            'volumes': [file_path+':/app/config'],
+            'restart': 'always',
+            'networks': ['job-recipe-orchestrator']
+        }
+        
 
 # Create the Docker Compose file content
 docker_compose = {
     'services': services,
     'volumes': {
-        'mongodb_data': {
+        'postgres_data': {
+            'driver': 'local'
+        },
+        'converted_output': {
             'driver': 'local'
         }
     },
     'networks': {
-        'recepy-manager': {
-            'name': 'recepy-manager'
+        'job-recipe-orchestrator': {
+            'name': 'job-recipe-orchestrator'
         }
     }
 }

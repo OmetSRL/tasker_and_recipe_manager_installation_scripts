@@ -98,6 +98,9 @@ echo "=== First Python script executed ==="
 python dockercompose_generator.py
 echo "=== Second Python script executed ==="
 
+# launching the script that prepares the Prisma file
+python prisma_generator.py
+echo "=== Third Python script executed ==="
 # i move outside the folder again
 cd ..
 
