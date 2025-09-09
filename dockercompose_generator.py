@@ -1,12 +1,11 @@
 import os
 import yaml
-import sys
 import json 
 
 parent_folder = "../configs"
 
 # reading the config file
-with open("../input_config.json", "r") as f:
+with open("input_config.json", "r") as f:
     input_config = json.load(f)
 
 # --- Custom scalar string for folded formatting ---
@@ -61,9 +60,9 @@ services['postgres-db'] = {
 
 
 def handleCommonConfig():
-    if input_config.config_fe_be.image_name_fe_recipe != "":
+    if input_config["config_fe_be"]["image_name_fe_recipe"] != "":
         services["recipe_manager"] = {
-            'image': input_config.config_fe_be.image_name_fe_recipe,
+            'image': input_config["config_fe_be"]["image_name_fe_recipe"],
             'container_name': 'recipe_manager',
             'healthcheck': {
                 'test': ["CMD", "curl", "-f", "https://localhost:5000/"],
@@ -78,9 +77,9 @@ def handleCommonConfig():
             'networks': ['job-recipe-orchestrator']
         }
         
-    if input_config.config_fe_be.image_name_fe_job != "":
+    if input_config["config_fe_be"]["image_name_fe_job"] != "":
         services["tasker"] = {
-            'image': input_config.config_fe_be.image_name_fe_job,
+            'image': input_config["config_fe_be"]["image_name_fe_job"],
             'container_name': 'tasker',
             'healthcheck': {
                 'test': ["CMD", "curl", "-f", "https://localhost:4000/"],
@@ -95,21 +94,25 @@ def handleCommonConfig():
             'networks': ['job-recipe-orchestrator']
         }
     
-    if input_config.config_fe_be.image_name_be != "":
+    if input_config["config_fe_be"]["image_name_be"] != "":
         services["orchestrator"] = {
-            'image': input_config.config_fe_be.image_name_be,
+            'image': input_config["config_fe_be"]["image_name_be"],
             'container_name': 'orchestrator',
             'healthcheck': {
-                'test': ["curl -fsSL http://localhost:5000/api/health"],
+                'test': ["CMD","curl", "-fsSL", "http://localhost:3000/api/health"],
                 'interval': '30s',
                 'timeout': '5s',
                 'retries': 3,
                 'start_period': '20s'
             },
+            'depends_on': { 
+                'postgres-db': {
+                    'condition': 'service_healthy'
+                }
+            },
             'volumes': [
                 './backend-logs:/logs', 'shared_token:/app/recipe_token', 
-                '/app/node_modules', 'converted_output:/app/converted-output',
-                'configs/prisma_schema:/app/prisma'],
+                'converted_output:/app/converted-output', 'configs/prisma_schema:/app/prisma'],
             'ports': ['3000:3000'],
             'command': ['sh -c "npm run db:push && npm start"'],
             'restart': 'always',
@@ -119,7 +122,7 @@ def handleCommonConfig():
 
 handleCommonConfig()
 
-for rw_name, rw_values in input_config.rw_configs.items():
+for rw_name, rw_values in input_config["rw_configs"].items():
     
     folder_path = os.path.join(parent_folder, rw_name) 
     file_path = os.path.join(folder_path, "config.json")
@@ -142,6 +145,9 @@ docker_compose = {
             'driver': 'local'
         },
         'converted_output': {
+            'driver': 'local'
+        },
+        'shared_token': {
             'driver': 'local'
         }
     },
