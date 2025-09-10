@@ -2,7 +2,7 @@ import os
 import yaml
 import json 
 
-parent_folder = "../rw_configs"
+parent_folder = "./rw_configs"
 
 # reading the config file
 with open("../input_config/config.json", "r") as f:
