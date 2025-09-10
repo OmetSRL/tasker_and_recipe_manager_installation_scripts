@@ -2,7 +2,7 @@ import os
 import yaml
 import json 
 
-parent_folder = "./rw_configs"
+parent_folder = "../rw_configs"
 
 # reading the config file
 with open("../input_config/config.json", "r") as f:
@@ -88,7 +88,8 @@ def handleCommonConfig():
                 'retries': 3,
                 'start_period': '20s'
             },
-            'volumes': ['./tasker-logs:/app/dist/logs', './backend-logs:/backend-logs' ],
+            'volumes': ['./tasker-logs:/app/dist/logs', './backend-logs:/backend-logs',
+                        './config_fe_be/config.json:/app/src/config/config.js'],
             'ports': ['4000:4000'],
             'restart': 'always',
             'networks': ['job-recipe-orchestrator']
@@ -112,7 +113,8 @@ def handleCommonConfig():
             },
             'volumes': [
                 './backend-logs:/logs', 'shared_token:/app/recipe_token', 
-                'converted_output:/app/converted-output', 'prisma_schema:/app/prisma'],
+                'converted_output:/app/converted-output', 'prisma_schema:/app/prisma',
+                './config_fe_be/config.json:/app/src/config/config.js'],
             'ports': ['3000:3000'],
             'command': ['sh -c "npm run db:push && npm start"'],
             'restart': 'always',
@@ -131,7 +133,7 @@ for rw_name, rw_values in input_config["rw_configs"].items():
         services[rw_name] = {
             'image': rw_values["image_name"],
             'container_name': rw_values["image_name"],
-            'volumes': [file_path+':/app/config'],
+            'volumes': ['./rw_configs/'+rw_name+'/config.json:/app/config.json'],
             'restart': 'always',
             'networks': ['job-recipe-orchestrator']
         }
