@@ -208,5 +208,5 @@ if __name__ == "__main__":
         + static_models()
     )
 
-    Path("schema.prisma").write_text(schema)
+    Path("../prisma_schema/schema.prisma").write_text(schema)
     print("schema.prisma generated")

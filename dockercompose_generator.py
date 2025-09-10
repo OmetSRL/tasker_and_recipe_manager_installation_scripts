@@ -2,10 +2,10 @@ import os
 import yaml
 import json 
 
-parent_folder = "../configs"
+parent_folder = "../rw_configs"
 
 # reading the config file
-with open("input_config.json", "r") as f:
+with open("../input_config/config.json", "r") as f:
     input_config = json.load(f)
 
 # --- Custom scalar string for folded formatting ---
@@ -112,7 +112,7 @@ def handleCommonConfig():
             },
             'volumes': [
                 './backend-logs:/logs', 'shared_token:/app/recipe_token', 
-                'converted_output:/app/converted-output', 'configs/prisma_schema:/app/prisma'],
+                'converted_output:/app/converted-output', 'prisma_schema:/app/prisma'],
             'ports': ['3000:3000'],
             'command': ['sh -c "npm run db:push && npm start"'],
             'restart': 'always',

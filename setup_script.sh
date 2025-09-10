@@ -5,6 +5,7 @@
 
 # Exit on error
 set -e
+set -euo pipefail
 
 # initial checks
 if [ "$(id -u)" -ne 0 ]; then
@@ -12,10 +13,20 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-if [ "$#" -ne 2 ]; then
-  echo "Usage: $0 <username> <password>"
+if [ "$#" -ne 3 ]; then
+  echo "Usage: $0 <username> <password> <ssh key>"
   exit 1
 fi
+
+# Start the ssh-agent
+eval "$(ssh-agent -s)"
+
+# Add key directly into agent (no temp file needed in bash)
+ssh-add <(echo "$PRIVATE_KEY_CONTENT")
+
+# Export vars for children
+export SSH_AUTH_SOCK
+export SSH_AGENT_PID
 
 # installing all the required packages
 echo "=== Installing Docker ==="
@@ -46,6 +57,7 @@ echo "=== Logging into Docker Hub ==="
 
 DOCKER_USERNAME="$1"
 DOCKER_PASSWORD="$2"
+SSH_KEY="$3"
 
 echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
 
@@ -79,8 +91,6 @@ echo "Installing python3-venv and python3-pip if they are missing"
 apt update
 apt install -y python3-venv python3-pip
 
-# i move inside the folder
-cd je-deployment
 # Create virtual environment if it doesn't exist, it includes dependencies of both scripts 
 if [ ! -d ".venv" ]; then
     python3 -m venv ".venv"
@@ -103,5 +113,8 @@ python dockercompose_generator.py
 echo "=== Third Python script executed ==="
 # i move outside the folder again
 cd ..
+
+# Cleanup
+ssh-agent -k >/dev/null
 
 echo "Setup complete! Scripts executed correctly and logged in DockerHub - you can delete the installation folder now"
