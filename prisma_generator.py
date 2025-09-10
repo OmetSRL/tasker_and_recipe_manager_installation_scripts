@@ -207,6 +207,14 @@ if __name__ == "__main__":
         + "\n"
         + static_models()
     )
-
-    Path("../prisma_schema/schema.prisma").write_text(schema)
+    
+    # Path to schema file
+    schema_file = Path("../prisma_schema/schema.prisma")
+    
+    # Create parent directories if they don't exist
+    schema_file.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Write the schema
+    schema_file.write_text(schema)
+    
     print("schema.prisma generated")
