@@ -73,19 +73,20 @@ def make_job_models(sources: dict) -> tuple[str, list[str]]:
             
             job_model = "model job {\n" + "\n".join(prisma_fields) + "\n}\n"
         else:
-            # Child job model
-            model_name = f"job_{src_name}"
-            prisma_fields = ["  id Int @id @unique"]
-            for key, field in fields.items():
-                t = field.get("type") or field.get("dataType")
-                prisma_type = TYPE_MAP.get(t, "String")
-                prisma_fields.append(f"  {key} {prisma_type}?")
+            if not fields == {}:
+                # Child job model
+                model_name = f"job_{src_name}"
+                prisma_fields = ["  id Int @id @unique"]
+                for key, field in fields.items():
+                    t = field.get("type") or field.get("dataType")
+                    prisma_type = TYPE_MAP.get(t, "String")
+                    prisma_fields.append(f"  {key} {prisma_type}?")
 
-            rel_name = f"{model_name}_rel"
-            prisma_fields.append(
-                f"  job job @relation(\"{rel_name}\", fields: [id], references: [id], onDelete: Cascade)"
-            )
-            other_jobs.append((model_name, prisma_fields, rel_name))
+                rel_name = f"{model_name}_rel"
+                prisma_fields.append(
+                    f"  job job @relation(\"{rel_name}\", fields: [id], references: [id], onDelete: Cascade)"
+                )
+                other_jobs.append((model_name, prisma_fields, rel_name))
 
     # Add back-relations into main job model
     if job_model and other_jobs:
