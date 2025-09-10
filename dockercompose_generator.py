@@ -129,8 +129,8 @@ for rw_name, rw_values in input_config["rw_configs"].items():
     
     if os.path.isfile(file_path):
         services[rw_name] = {
-            'image': rw_values.image_name,
-            'container_name': rw_values.image_name,
+            'image': rw_values["image_name"],
+            'container_name': rw_values["image_name"],
             'volumes': [file_path+':/app/config'],
             'restart': 'always',
             'networks': ['job-recipe-orchestrator']
