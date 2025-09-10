@@ -179,8 +179,8 @@ model User {
 
 
 if __name__ == "__main__":
-    base_path = Path(".")  # where your folders (folder1, dummy_1, etc.) live
-    sources_file = Path("sources.json")
+    base_path = Path("../config_fe_be")  # where your folders (folder1, dummy_1, etc.) live
+    sources_file = Path("config.json")
 
     sources = parse_sources_config(sources_file)
 
