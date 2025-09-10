@@ -46,6 +46,7 @@ services = {}
 services['postgres-db'] = {
     'image': 'postgres:15',
     'container_name': 'postgres-db',
+    'environment': ['POSTGRES_USER=postgres', 'POSTGRES_PASSWORD=ADM','POSTGRES_DB=omet'],
     'healthcheck': {
       'test': ["CMD", "pg_isready", "-U", "postgres"],
       'interval': '5s',

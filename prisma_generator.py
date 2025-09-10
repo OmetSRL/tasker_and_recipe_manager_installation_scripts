@@ -15,6 +15,18 @@ TYPE_MAP = {
     "int32": "Int",
     "Int64": "BigInt",
     "int64": "BigInt",
+    "BOOL": "Boolean",
+    "BYTE": "Int",
+    "WORD": "Int",
+    "DWORD": "Int",
+    "SINT": "Int",
+    "USINT": "Int",
+    "INT": "Int",
+    "UINT": "Int",
+    "DINT": "Int",
+    "UDINT": "Int",
+    "REAL": "Float",
+    "STRING": "String"
 }
 
 
@@ -179,7 +191,7 @@ model User {
 
 
 if __name__ == "__main__":
-    base_path = Path("../")  # where your folders (folder1, dummy_1, etc.) live
+    base_path = Path("../rw_configs")  # where your folders (folder1, dummy_1, etc.) live
     sources_file = Path("../config_fe_be/config.json")
 
     sources = parse_sources_config(sources_file)
