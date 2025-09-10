@@ -26,7 +26,7 @@ TYPE_MAP = {
     "DINT": "Int",
     "UDINT": "Int",
     "REAL": "Float",
-    "STRING": "String"
+    "STRING": "String",
 }
 
 
@@ -44,7 +44,7 @@ def make_recipe_model(model_name: str, fields: dict) -> str | None:
     # back-reference to recipe_data
     rel_name = f"{model_name}_rel"
     prisma_fields.append(
-        f"  recipe_data recipe_data @relation(\"{rel_name}\", fields: [id], references: [id], onDelete: Cascade)"
+        f'  recipe_data recipe_data @relation("{rel_name}", fields: [id], references: [id], onDelete: Cascade)'
     )
 
     return f"model {model_name} {{\n" + "\n".join(prisma_fields) + "\n}\n"
@@ -61,16 +61,21 @@ def make_job_models(sources: dict) -> tuple[str, list[str]]:
             prisma_fields = ["  id Int @id @default(autoincrement())"]
             has_recipe = False
             for key, field in fields.items():
-                if key == 'recipe_id': has_recipe= True
+                if key == "recipe_id":
+                    has_recipe = True
                 t = field.get("type") or field.get("dataType")
                 prisma_type = TYPE_MAP.get(t, "String")
                 prisma_fields.append(f"  {key} {prisma_type}?")
-            
+
             # adding some special relationships
-            if has_recipe: 
-                prisma_fields.append(f'  recipe_data recipe_data?  @relation("recipe_rel", fields: [recipe_id], references: [id], onDelete: Cascade)')
-            prisma_fields.append(f'  status_timestamp status_timestamp[] @relation("status_timestamp_rel")')
-            
+            if has_recipe:
+                prisma_fields.append(
+                    f'  recipe_data recipe_data?  @relation("recipe_rel", fields: [recipe_id], references: [id], onDelete: Cascade)'
+                )
+            prisma_fields.append(
+                f'  status_timestamp status_timestamp[] @relation("status_timestamp_rel")'
+            )
+
             job_model = "model job {\n" + "\n".join(prisma_fields) + "\n}\n"
         else:
             if not fields == {}:
@@ -84,7 +89,7 @@ def make_job_models(sources: dict) -> tuple[str, list[str]]:
 
                 rel_name = f"{model_name}_rel"
                 prisma_fields.append(
-                    f"  job job @relation(\"{rel_name}\", fields: [id], references: [id], onDelete: Cascade)"
+                    f'  job job @relation("{rel_name}", fields: [id], references: [id], onDelete: Cascade)'
                 )
                 other_jobs.append((model_name, prisma_fields, rel_name))
 
@@ -92,13 +97,17 @@ def make_job_models(sources: dict) -> tuple[str, list[str]]:
     if job_model and other_jobs:
         job_lines = job_model.splitlines()
         for model_name, _, rel_name in other_jobs:
-            job_lines.insert(-1, f"  {model_name} {model_name}[] @relation(\"{rel_name}\")")
+            job_lines.insert(
+                -1, f'  {model_name} {model_name}[] @relation("{rel_name}")'
+            )
         job_model = "\n".join(job_lines)
 
     # Render other job models
     job_models = []
     for model_name, prisma_fields, _ in other_jobs:
-        job_models.append("model " + model_name + " {\n" + "\n".join(prisma_fields) + "\n}\n")
+        job_models.append(
+            "model " + model_name + " {\n" + "\n".join(prisma_fields) + "\n}\n"
+        )
 
     return job_model, job_models
 
@@ -112,12 +121,12 @@ def make_recipe_data_model(recipe_models: list[str]) -> str:
         "  notes     String?",
         "  status    Int     @default(0) // status 0 ready 1 loaded in the machine",
         '  updatedAt BigInt  @default(dbgenerated("floor(EXTRACT(epoch FROM now()))"))',
-        "  job       job[]   @relation(\"recipe_rel\")",
+        '  job       job[]   @relation("recipe_rel")',
     ]
 
     for rm in recipe_models:
         rel_name = f"{rm}_rel"
-        prisma_fields.append(f"  {rm} {rm}? @relation(\"{rel_name}\")")
+        prisma_fields.append(f'  {rm} {rm}? @relation("{rel_name}")')
 
     return "model recipe_data {\n" + "\n".join(prisma_fields) + "\n}\n"
 
@@ -133,7 +142,9 @@ def parse_sources_config(source_file: Path) -> dict:
     return sources
 
 
-def generate_recipe_models(folder_base: Path, sources: dict) -> tuple[list[str], list[str]]:
+def generate_recipe_models(
+    folder_base: Path, sources: dict
+) -> tuple[list[str], list[str]]:
     recipe_models = []
     recipe_model_names = []
 
@@ -151,7 +162,9 @@ def generate_recipe_models(folder_base: Path, sources: dict) -> tuple[list[str],
                 # Filter if folder name matches a source
                 for src_name, src_fields in sources.items():
                     if src_name in folder_name:
-                        fields = {k: v for k, v in fields.items() if k not in src_fields}
+                        fields = {
+                            k: v for k, v in fields.items() if k not in src_fields
+                        }
 
                 prisma_fields = {k: {"type": v["type"]} for k, v in fields.items()}
                 model_str = make_recipe_model(model_name, prisma_fields)
@@ -162,6 +175,7 @@ def generate_recipe_models(folder_base: Path, sources: dict) -> tuple[list[str],
                     print(f"Skipped {model_name}, no fields left after filtering")
 
     return recipe_models, recipe_model_names
+
 
 def static_models() -> str:
     """Return the always-present models."""
@@ -192,7 +206,9 @@ model User {
 
 
 if __name__ == "__main__":
-    base_path = Path("../rw_configs")  # where your folders (folder1, dummy_1, etc.) live
+    base_path = Path(
+        "../rw_configs"
+    )  # where your folders (folder1, dummy_1, etc.) live
     sources_file = Path("../config_fe_be/config.json")
 
     sources = parse_sources_config(sources_file)
@@ -204,11 +220,11 @@ if __name__ == "__main__":
 
     schema = (
         "generator client {\n"
-        "  provider = \"prisma-client-js\"\n"
+        '  provider = "prisma-client-js"\n'
         "}\n\n"
         "datasource db {\n"
-        "  provider = \"postgresql\"\n"
-        "  url      = env(\"DATABASE_URL\")\n"
+        '  provider = "postgresql"\n'
+        '  url      = env("DATABASE_URL")\n'
         "}\n\n"
         + recipe_data_model
         + "\n"
@@ -220,14 +236,14 @@ if __name__ == "__main__":
         + "\n"
         + static_models()
     )
-    
+
     # Path to schema file
     schema_file = Path("../prisma_schema/schema.prisma")
-    
+
     # Create parent directories if they don't exist
     schema_file.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # Write the schema
     schema_file.write_text(schema)
-    
+
     print("schema.prisma generated")
