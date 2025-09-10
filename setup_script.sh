@@ -21,6 +21,10 @@ fi
 # Start the ssh-agent
 eval "$(ssh-agent -s)"
 
+DOCKER_USERNAME="$1"
+DOCKER_PASSWORD="$2"
+PRIVATE_KEY_CONTENT="$3"
+
 # Add key directly into agent (no temp file needed in bash)
 ssh-add <(echo "$PRIVATE_KEY_CONTENT")
 
@@ -54,10 +58,6 @@ if ! command -v docker &> /dev/null; then
 fi
 
 echo "=== Logging into Docker Hub ==="
-
-DOCKER_USERNAME="$1"
-DOCKER_PASSWORD="$2"
-SSH_KEY="$3"
 
 echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
 
