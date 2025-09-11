@@ -51,26 +51,34 @@ input_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "c
 
 services = {}
 
-# Adding custom ones
-services["postgres-db"] = {
-    "image": "postgres:15",
-    "container_name": "postgres-db",
-    "environment": [
-        "POSTGRES_USER=postgres",
-        "POSTGRES_PASSWORD=ADM",
-        "POSTGRES_DB=omet",
-    ],
-    "healthcheck": {
-        "test": ["CMD", "pg_isready", "-U", "postgres"],
-        "interval": "5s",
-        "timeout": "5s",
-        "retries": 10,
-        "start_period": "20s",
-    },
-    "volumes": ["postgres_data:/var/lib/postgresql/data"],
-    "restart": "always",
-    "networks": ["job-recipe-orchestrator"],
-}
+# Get db_config section
+db_config = input_config["db_config"]
+
+name_of_db = ""
+
+# Loop through all DB entries (e.g. postgres-db, mysql-db, etc.)
+for db_name, db_values in db_config.items():
+    name_of_db = db_name
+    # Adding custom ones
+    services[db_name] = {
+        "image": "postgres:15",
+        "container_name": "postgres-db",
+        "environment": [
+            "POSTGRES_USER=" + db_values["postgres_user"],
+            "POSTGRES_PASSWORD=" + db_values["postgres_password"],
+            "POSTGRES_DB=" + db_values["postgres_db"],
+        ],
+        "healthcheck": {
+            "test": ["CMD", "pg_isready", "-U", "postgres"],
+            "interval": "5s",
+            "timeout": "5s",
+            "retries": 10,
+            "start_period": "20s",
+        },
+        "volumes": ["postgres_data:/var/lib/postgresql/data"],
+        "restart": "always",
+        "networks": ["job-recipe-orchestrator"],
+    }
 
 
 def handleCommonConfig():
@@ -123,6 +131,9 @@ def handleCommonConfig():
                 "retries": 3,
                 "start_period": "20s",
             },
+            "environment": [
+                f'DATABASE_URL="postgresql://{db_config[name_of_db]["postgres_user"]}:{db_config[name_of_db]["postgres_password"]}@{name_of_db}:5432/{db_config[name_of_db]["postgres_db"]}?schema=public"'
+            ],
             "depends_on": {"postgres-db": {"condition": "service_healthy"}},
             "volumes": [
                 "./backend-logs:/logs",
