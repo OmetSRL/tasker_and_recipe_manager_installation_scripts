@@ -57,4 +57,8 @@ def process_config(config_data):
 
 
 if __name__ == "__main__":
-    # Example
+    # reading config and launching processing
+    with open("../input_config/config.json", "r", encoding="utf-8") as f:
+        config_data = json.load(f)
+
+    process_config(config_data)
