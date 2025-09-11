@@ -26,7 +26,7 @@ PRIVATE_KEY_CONTENT="$3"
 
 # --- FIXED SECTION: add key using a temp file instead of /dev/fd ---
 TMP_KEY=$(mktemp)
-echo "$PRIVATE_KEY_CONTENT" > "$TMP_KEY"
+echo -e "$PRIVATE_KEY_CONTENT" > "$TMP_KEY"
 chmod 600 "$TMP_KEY"
 ssh-add "$TMP_KEY"
 rm -f "$TMP_KEY"
