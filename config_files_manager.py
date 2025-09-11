@@ -1,6 +1,7 @@
 import os
 import json
 import subprocess
+import shutil
 
 # Replace this with your actual repo URL
 REPO_URL = "git@github.com:OmetSRL/recipe_deployment_config.git"
@@ -31,9 +32,10 @@ def process_config(config_data):
             os.path.join(os.path.dirname(__file__), "../rw_configs")
         )
         target_dir = os.path.join(parent_dir, rw_name)
+
         if os.path.exists(target_dir):
-            print(f"Directory {target_dir} already exists, skipping clone")
-            continue
+            print(f"Directory {target_dir} already exists, deleting it...")
+            shutil.rmtree(target_dir)
 
         print(f"Cloning branch '{branch_name}' into '{target_dir}'...")
         try:
@@ -55,8 +57,4 @@ def process_config(config_data):
 
 
 if __name__ == "__main__":
-    # Example usage: reading from a file
-    with open("../input_config/config.json", "r", encoding="utf-8") as f:
-        config_data = json.load(f)
-
-    process_config(config_data)
+    # Example
