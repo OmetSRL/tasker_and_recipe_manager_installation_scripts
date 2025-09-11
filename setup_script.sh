@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Usage: ./je-deployment/setup_script.sh <dockerhub-username> <dockerhub-password>
-
+# Usage: ./je-deployment/setup_script.sh <dockerhub-username> <dockerhub-password> <ssh key>
 
 # Exit on error
 set -e
@@ -25,8 +24,13 @@ DOCKER_USERNAME="$1"
 DOCKER_PASSWORD="$2"
 PRIVATE_KEY_CONTENT="$3"
 
-# Add key directly into agent (no temp file needed in bash)
-ssh-add <(echo "$PRIVATE_KEY_CONTENT")
+# --- FIXED SECTION: add key using a temp file instead of /dev/fd ---
+TMP_KEY=$(mktemp)
+echo "$PRIVATE_KEY_CONTENT" > "$TMP_KEY"
+chmod 600 "$TMP_KEY"
+ssh-add "$TMP_KEY"
+rm -f "$TMP_KEY"
+# ------------------------------------------------------------------
 
 # Export vars for children
 export SSH_AUTH_SOCK
@@ -111,6 +115,7 @@ echo "=== Second Python script executed ==="
 # launching the script that prepares the docker compose
 python dockercompose_generator.py
 echo "=== Third Python script executed ==="
+
 # i move outside the folder again
 cd ..
 

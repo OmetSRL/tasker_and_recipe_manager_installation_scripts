@@ -56,7 +56,7 @@ def make_job_models(sources: dict) -> tuple[str, list[str]]:
     other_jobs = []
 
     for src_name, fields in sources.items():
-        if src_name == "job":
+        if 'generic_' in src_name:
             # Main job model
             prisma_fields = ["  id Int @id @default(autoincrement())"]
             has_recipe = False
@@ -76,7 +76,7 @@ def make_job_models(sources: dict) -> tuple[str, list[str]]:
                 f'  status_timestamp status_timestamp[] @relation("status_timestamp_rel")'
             )
 
-            job_model = "model job {\n" + "\n".join(prisma_fields) + "\n}\n"
+            job_model = "model "+src_name.replace('generic_', '')+" {\n" + "\n".join(prisma_fields) + "\n}\n"
         else:
             if not fields == {}:
                 # Child job model
@@ -137,7 +137,8 @@ def parse_sources_config(source_file: Path) -> dict:
         data = json.load(f)
     sources = {}
     for src in data.get("sources", []):
-        name = src["source"]
+        # i add generic_ in front of the generic sources aka the basic job model and maybe something else in the future
+        name = src["source"] if src["generic_fields"] != True else f'generic_{src["source"]}'
         sources[name] = src["fields"]
     return sources
 
