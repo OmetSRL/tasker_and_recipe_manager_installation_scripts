@@ -132,7 +132,7 @@ def handleCommonConfig():
                 "start_period": "20s",
             },
             "environment": [
-                f'DATABASE_URL="postgresql://{db_config[name_of_db]["postgres_user"]}:{db_config[name_of_db]["postgres_password"]}@{name_of_db}:5432/{db_config[name_of_db]["postgres_db"]}?schema=public"'
+                f'DATABASE_URL=postgresql://{db_config[name_of_db]["postgres_user"]}:{db_config[name_of_db]["postgres_password"]}@{name_of_db}:5432/{db_config[name_of_db]["postgres_db"]}?schema=public'
             ],
             "depends_on": {"postgres-db": {"condition": "service_healthy"}},
             "volumes": [
