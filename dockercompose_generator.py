@@ -144,7 +144,7 @@ def handleCommonConfig():
                 "./config_fe_be/config.json:/app/src/config/config.js",
             ],
             "ports": ["3000:3000"],
-            "command": ['sh -c "npm run db:push && npm start"'],
+            "command": 'sh -c "npm run db:push && npm start"',
             "restart": "always",
             "networks": ["job-recipe-orchestrator"],
         }
