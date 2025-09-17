@@ -138,8 +138,8 @@ def handleCommonConfig():
             "volumes": [
                 "./backend-logs:/logs",
                 "shared_token:/app/recipe_token",
-                "converted_output:/app/converted-output",
-                "prisma_schema:/app/prisma",
+                "./converted_output:/app/converted-output",
+                "./prisma_schema:/app/prisma",
                 "./config_fe_be/config.json:/app/src/config/config.js",
             ],
             "ports": ["3000:3000"],
