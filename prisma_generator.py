@@ -231,6 +231,7 @@ if __name__ == "__main__":
     schema = (
         "generator client {\n"
         '  provider = "prisma-client-js"\n'
+        '  output = "../generated/prisma"'
         "}\n\n"
         "generator jsonSchema {\n"
         '  provider = "prisma-json-schema-generator"\n'
