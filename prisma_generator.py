@@ -232,6 +232,12 @@ if __name__ == "__main__":
         "generator client {\n"
         '  provider = "prisma-client-js"\n'
         "}\n\n"
+        "generator jsonSchema {\n"
+        '  provider = "prisma-json-schema-generator"\n'
+        '  output = "../json-schema"\n'
+        '  includeRequiredFields = "true"\n'
+        '  keepRelationFields = "false"\n'
+        "}\n\n"
         "datasource db {\n"
         '  provider = "postgresql"\n'
         '  url      = env("DATABASE_URL")\n'
