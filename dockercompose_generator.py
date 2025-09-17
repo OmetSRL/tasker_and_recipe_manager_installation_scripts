@@ -121,6 +121,7 @@ def handleCommonConfig():
         }
 
     if input_config["config_fe_be"]["image_name_be"] != "":
+        os.makedirs("../converted_attachments", exist_ok=True)
         services["orchestrator"] = {
             "image": input_config["config_fe_be"]["image_name_be"],
             "container_name": "orchestrator",
@@ -138,7 +139,7 @@ def handleCommonConfig():
             "volumes": [
                 "./backend-logs:/logs",
                 "shared_token:/app/recipe_token",
-                "./converted_output:/app/converted-output",
+                "./converted_attachments:/app/converted-output",
                 "./prisma_schema:/app/prisma",
                 "./config_fe_be/config.json:/app/src/config/config.js",
             ],
