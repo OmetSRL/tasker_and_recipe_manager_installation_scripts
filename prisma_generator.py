@@ -65,7 +65,10 @@ def make_job_models(sources: dict) -> tuple[str, list[str]]:
                     has_recipe = True
                 t = field.get("type") or field.get("dataType")
                 prisma_type = TYPE_MAP.get(t, "String")
-                prisma_fields.append(f"  {key} {prisma_type}?")
+                if key == 'odp':
+                    prisma_fields.append(f"  {key} {prisma_type} @unique")
+                else:
+                    prisma_fields.append(f"  {key} {prisma_type}?")
 
             # adding some special relationships
             if has_recipe:
