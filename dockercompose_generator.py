@@ -79,15 +79,15 @@ for db_name, db_values in db_config.items():
         "cpus": "1.0",
         "volumes": ["postgres_data:/var/lib/postgresql/data"],
         "restart": "always",
-        "networks": ["job-recipe-orchestrator"],
+        "networks": ["task-job_card-orchestrator"],
     }
 
 
 def handleCommonConfig():
-    if input_config["config_fe_be"]["image_name_fe_recipe"] != "":
-        services["recipe_manager"] = {
-            "image": input_config["config_fe_be"]["image_name_fe_recipe"],
-            "container_name": "recipe_manager",
+    if input_config["config_fe_be"]["image_name_fe_job_card"] != "":
+        services["job_card_manager"] = {
+            "image": input_config["config_fe_be"]["image_name_fe_job_card"],
+            "container_name": "job_card_manager",
             "healthcheck": {
                 "test": ["CMD", "curl", "-f", "https://localhost:5000/"],
                 "interval": "30s",
@@ -97,15 +97,15 @@ def handleCommonConfig():
             },
             "mem_limit": "200M",
             "cpus": "0.5",
-            "volumes": ["shared_token:/app/recipe_token"],
+            "volumes": ["shared_token:/app/job_card_token"],
             "ports": ["5000:5000"],
             "restart": "always",
-            "networks": ["job-recipe-orchestrator"],
+            "networks": ["task-job_card-orchestrator"],
         }
 
-    if input_config["config_fe_be"]["image_name_fe_job"] != "":
+    if input_config["config_fe_be"]["image_name_fe_task"] != "":
         services["tasker"] = {
-            "image": input_config["config_fe_be"]["image_name_fe_job"],
+            "image": input_config["config_fe_be"]["image_name_fe_task"],
             "container_name": "tasker",
             "healthcheck": {
                 "test": ["CMD", "curl", "-f", "https://localhost:4000/"],
@@ -123,7 +123,7 @@ def handleCommonConfig():
             "cpus": "0.5",
             "ports": ["4000:4000"],
             "restart": "always",
-            "networks": ["job-recipe-orchestrator"],
+            "networks": ["task-job_card-orchestrator"],
         }
 
     if input_config["config_fe_be"]["image_name_be"] != "":
@@ -144,7 +144,7 @@ def handleCommonConfig():
             "depends_on": {"postgres-db": {"condition": "service_healthy"}},
             "volumes": [
                 "./backend-logs:/logs",
-                "shared_token:/app/recipe_token",
+                "shared_token:/app/job_card_token",
                 "./converted_attachments:/app/converted-output",
                 "./prisma_schema:/app/prisma",
                 "./config_fe_be/config.json:/app/src/config/config.js",
@@ -154,7 +154,7 @@ def handleCommonConfig():
             "ports": ["3000:3000"],
             "command": 'sh -c "npm run db:push && npm start"',
             "restart": "always",
-            "networks": ["job-recipe-orchestrator"],
+            "networks": ["task-job_card-orchestrator"],
         }
 
 
@@ -173,7 +173,7 @@ for rw_name, rw_values in input_config["rw_configs"].items():
             "mem_limit": "200M",
             "cpus": "0.5",
             "restart": "always",
-            "networks": ["job-recipe-orchestrator"],
+            "networks": ["task-job_card-orchestrator"],
         }
 
 
@@ -185,7 +185,7 @@ docker_compose = {
         "converted_output": {"driver": "local"},
         "shared_token": {"driver": "local"},
     },
-    "networks": {"job-recipe-orchestrator": {"name": "job-recipe-orchestrator"}},
+    "networks": {"task-job_card-orchestrator": {"name": "task-job_card-orchestrator"}},
 }
 
 # Step 6: Dump using the custom dumper

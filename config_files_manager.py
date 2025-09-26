@@ -4,7 +4,7 @@ import subprocess
 import shutil
 
 # Replace this with your actual repo URL
-REPO_URL = "git@github.com:OmetSRL/recipe_deployment_config.git"
+REPO_URL = "git@github.com:OmetSRL/job_card_deployment_config.git"
 
 
 def process_config(config_data):

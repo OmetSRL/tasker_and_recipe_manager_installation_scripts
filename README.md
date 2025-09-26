@@ -1,6 +1,6 @@
-# Job Executor deployment script
+# Task Executor deployment script
 
-This script is used to prepare the enviroment for the installation of the Job Executor apllication.\
+This script is used to prepare the enviroment for the installation of the Task Executor apllication.\
 It installs all the required packages, sets up a shared folder and logs in Docker Hub\
 You need to pass the Docker Hub username, the password like:\
 ./setup_script.sh <username_dockerhub> <password_dockerhub>
