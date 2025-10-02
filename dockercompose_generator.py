@@ -167,7 +167,7 @@ print("---rw configs----")
 
 for rw_name, rw_values in input_config["rw_configs"].items():
     print("inside loop: "+rw_name)
-    print("inside loop: "+rw_values)
+    print("inside loop: "+str(rw_values))
     folder_path = os.path.join(parent_folder, rw_name)
     file_path = os.path.join(folder_path, "config.json")
     print("inside loop: "+folder_path)
