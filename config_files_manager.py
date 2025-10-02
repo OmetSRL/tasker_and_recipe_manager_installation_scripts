@@ -4,7 +4,7 @@ import subprocess
 import shutil
 
 # Replace this with your actual repo URL
-REPO_URL = "git@github.com:OmetSRL/job_card_deployment_config.git"
+REPO_URL = "git@github.com:OmetSRL/recipe_deployment_config.git"
 
 
 def process_config(config_data):
@@ -22,9 +22,6 @@ def process_config(config_data):
 
     # 2. Loop over rw_configs and clone repos
     rw_configs = config_data.get("rw_configs", {})
-    print("---rw configs----")
-    print(rw_configs)
-    print("---rw configs----")
     for rw_name, rw_info in rw_configs.items():
         branch_name = rw_info.get("branch_name")
         if not branch_name:
