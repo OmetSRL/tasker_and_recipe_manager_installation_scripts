@@ -128,6 +128,7 @@ def handleCommonConfig():
 
     if input_config["config_fe_be"]["image_name_be"] != "":
         os.makedirs("../converted_attachments", exist_ok=True)
+        os.makedirs("../logs/orchestrator", exist_ok=True)
         services["orchestrator"] = {
             "image": input_config["config_fe_be"]["image_name_be"],
             "container_name": "orchestrator",
@@ -143,8 +144,8 @@ def handleCommonConfig():
             ],
             "depends_on": {"postgres-db": {"condition": "service_healthy"}},
             "volumes": [
-                "./backend-logs:/logs",
                 "shared_token:/app/job_card_token",
+                "./logs/orchestrator:/logs",
                 "./converted_attachments:/app/converted-output",
                 "./prisma_schema:/app/prisma",
                 "./config_fe_be/config.json:/app/src/config/config.js",
@@ -173,9 +174,35 @@ for rw_name, rw_values in input_config["rw_configs"].items():
             "mem_limit": "200M",
             "cpus": "0.5",
             "restart": "always",
+            "volumes":["./logs/"+rw_name+":/logs"],
             "networks": ["task-job_card-orchestrator"],
         }
 
+
+# log viewer services
+if input_config["config_log_viewer"]["logs_viewer_be"] != "":
+    services["logs_viewer_be"] = {
+        "container_name": "logs_viewer_be",
+        "image": input_config["config_log_viewer"]["logs_viewer_be"],
+        "restart": "always",
+        "user": "0:0",
+        "networks": ["task-job_card-orchestrator"],
+        "ports": ["3001:8000"],
+        "volumes": ["/var/run/docker.sock:/var/run/docker.sock"],
+        "environment": ["DOCKER_HOST=unix:///var/run/docker.sock"]
+    }
+
+if input_config["config_log_viewer"]["logs_viewer_fe"] != "":
+    services["logs_viewer_fe"] = {
+        "container_name": "logs_viewer_fe",
+        "image": input_config["config_log_viewer"]["logs_viewer_fe"],
+        "restart": "always",
+        "user": "0:0",
+        "networks": ["task-job_card-orchestrator"],
+        "ports": ["3002:4600"],
+        "volumes": ["./logs/:/app/dist/logs"],
+        "environment": ["DOCKER_HOST=unix:///var/run/docker.sock"]
+    }
 
 # Create the Docker Compose file content
 docker_compose = {
