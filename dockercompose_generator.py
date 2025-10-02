@@ -161,11 +161,17 @@ def handleCommonConfig():
 
 handleCommonConfig()
 
-for rw_name, rw_values in input_config["rw_configs"].items():
+print("---rw configs----")
+print(input_config["rw_configs"])
+print("---rw configs----")
 
+for rw_name, rw_values in input_config["rw_configs"].items():
+    print("inside loop: "+rw_name)
+    print("inside loop: "+rw_values)
     folder_path = os.path.join(parent_folder, rw_name)
     file_path = os.path.join(folder_path, "config.json")
-
+    print("inside loop: "+folder_path)
+    
     if os.path.isfile(file_path):
         services[rw_name] = {
             "image": rw_values["image_name"],

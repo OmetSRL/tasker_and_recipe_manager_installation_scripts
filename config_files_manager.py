@@ -22,6 +22,9 @@ def process_config(config_data):
 
     # 2. Loop over rw_configs and clone repos
     rw_configs = config_data.get("rw_configs", {})
+    print("---rw configs----")
+    print(rw_configs)
+    print("---rw configs----")
     for rw_name, rw_info in rw_configs.items():
         branch_name = rw_info.get("branch_name")
         if not branch_name:
