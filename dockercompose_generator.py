@@ -116,7 +116,7 @@ def handleCommonConfig():
             },
             "volumes": [
                 "./tasker-logs:/app/dist/logs",
-                "./backend-logs:/backend-logs",
+                "./logs/orchestrator:/backend-logs",
                 "./config_fe_be/config.json:/app/src/config/config.js",
             ],
             "mem_limit": "200M",
