@@ -73,7 +73,7 @@ def make_task_models(sources: dict) -> tuple[str, list[str]]:
             # adding some special relationships
             if has_job_card:
                 prisma_fields.append(
-                    f'  job_card_metadata job_card_metadata?  @relation("job_card_rel", fields: [job_card_id], references: [id], onDelete: Cascade)'
+                    f'  job_card_metadata job_card_metadata?  @relation("job_card_rel", fields: [job_card_id], references: [id], onDelete: SetNull)'
                 )
             prisma_fields.append(f"  createdAt DateTime @default(now())")
             prisma_fields.append(f'  status_timestamp status_timestamp[] @relation("status_timestamp_rel")')
