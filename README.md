@@ -2,7 +2,8 @@
 
 This script is used to prepare the enviroment for the installation of the Tasker and/or the Job Card Manger application.\
 It installs all the required packages, logs in Docker Hub and launches some setup Python scripts.\
-You need to pass the Docker Hub username, the password and the ssh jey for the github like:\
+First you need to have a folder input_config with a config.json file structured like described here: <https://app.clickup.com/9012411481/v/dc/8cjwz2t-2472/8cjwz2t-5952> \
+Then you can launch the script passing: the Docker Hub username, the password and the ssh key for the github like:\
 ./setup_script.sh <username_dockerhub> <password_dockerhub> <ssh_key_for_github>
 \
 The Python scripts execute these operations:
