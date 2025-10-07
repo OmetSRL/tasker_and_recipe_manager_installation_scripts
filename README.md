@@ -1,15 +1,13 @@
 # Task Executor deployment script
 
-This script is used to prepare the enviroment for the installation of the Task Executor apllication.\
-It installs all the required packages, sets up a shared folder and logs in Docker Hub\
-You need to pass the Docker Hub username, the password like:\
-./setup_script.sh <username_dockerhub> <password_dockerhub>
+This script is used to prepare the enviroment for the installation of the Tasker and/or the Job Card Manger application.\
+It installs all the required packages, logs in Docker Hub and launches some setup Pythin scripts\
+You need to pass the Docker Hub username, the password and the ssh jey for the github like:\
+./setup_script.sh <username_dockerhub> <password_dockerhub> <ssh_key_for_github>
 \
-This also includes a Python script that is launched when the sh script is launched that automatically generates a Docker compose file.\
-It needs a folder "configs" in the same folder where this repo is cloned (not inside the repo).
-Inside it there must be all the required configs and with the names in this format:\
-config-<component_name>-<component_id>.json\
-Examples:\
-config-opcua_rw-1.json\
-config-opcua_rw-2.json\
-config-mongo_rw-1.json
+The Python scripts execute these operations: \
+ 1. clones the correct configs for the RW modules from this repo https://github.com/OmetSRL tasker_and_recipe_manager_installation_scripts and prepares the backend/Tasker configs
+ 2. generates the prisma file (the DB schema essentially) from the configs prepared in the step before
+ 3. generate the docker compose file and all the required volumes
+
+Once executed this repo can be deleted since each required file is generated outside this folder, to start the application after the execution you only need to do docker compose up
