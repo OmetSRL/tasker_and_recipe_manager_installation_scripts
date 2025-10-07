@@ -7,7 +7,7 @@ You need to pass the Docker Hub username, the password and the ssh jey for the g
 \
 The Python scripts execute these operations:
 
- 1. clones the correct configs for the RW modules from this repo <https://github.com/OmetSRL> tasker_and_recipe_manager_installation_scripts and prepares the backend/Tasker configs
+ 1. clones the correct configs for the RW modules from this repo <https://github.com/OmetSRL/tasker_and_recipe_manager_installation_scripts> and prepares the backend/Tasker configs
  2. generates the prisma file (the DB schema essentially) from the configs prepared in the step before
  3. generate the docker compose file and all the required volumes
 
