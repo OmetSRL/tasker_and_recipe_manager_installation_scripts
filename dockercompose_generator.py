@@ -178,10 +178,10 @@ for rw_name, rw_values in input_config["rw_configs"].items():
 
 
 # log viewer services
-if input_config["config_log_viewer"]["logs_viewer_be"] != "":
+if input_config["config_log_viewer"]["image_name_be"] != "":
     services["logs_viewer_be"] = {
         "container_name": "logs_viewer_be",
-        "image": input_config["config_log_viewer"]["logs_viewer_be"],
+        "image": input_config["config_log_viewer"]["image_name_be"],
         "restart": "always",
         "user": "0:0",
         "networks": ["task-job_card-orchestrator"],
@@ -190,10 +190,10 @@ if input_config["config_log_viewer"]["logs_viewer_be"] != "":
         "environment": ["DOCKER_HOST=unix:///var/run/docker.sock"]
     }
 
-if input_config["config_log_viewer"]["logs_viewer_fe"] != "":
+if input_config["config_log_viewer"]["image_name_fe"] != "":
     services["logs_viewer_fe"] = {
         "container_name": "logs_viewer_fe",
-        "image": input_config["config_log_viewer"]["logs_viewer_fe"],
+        "image": input_config["config_log_viewer"]["image_name_fe"],
         "restart": "always",
         "user": "0:0",
         "networks": ["task-job_card-orchestrator"],
