@@ -6,12 +6,6 @@
 set -e
 set -euo pipefail
 
-# initial checks
-if [ "$(id -u)" -ne 0 ]; then
-    echo "This script must be run as root." >&2
-    exit 1
-fi
-
 if [ "$#" -ne 3 ]; then
   echo "Usage: $0 <username> <password> <ssh key>"
   exit 1
@@ -39,8 +33,8 @@ export SSH_AGENT_PID
 # installing all the required packages
 echo "=== Installing Docker ==="
 if ! command -v docker &> /dev/null; then
-    apt-get update
-    apt-get install -y \
+    sudo apt-get update
+    sudo apt-get install -y \
         ca-certificates \
         curl \
         gnupg \
@@ -57,8 +51,8 @@ if ! command -v docker &> /dev/null; then
       "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
       $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-    apt-get update
-    apt-get install -y docker-ce docker-ce-cli containerd.io
+    sudo apt-get update
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 fi
 
 echo "=== Logging into Docker Hub ==="
@@ -80,8 +74,8 @@ if ! command -v python3 &> /dev/null; then
     # Attempt to install Python 3 (Debian/Ubuntu)
     if [ -f /etc/debian_version ]; then
         echo "Installing Python 3 using apt..."
-        apt update
-        apt install -y python3
+        sudo apt update
+        sudo apt install -y python3
     else
         echo "Unsupported OS for auto-install. Please install Python 3 manually."
         exit 1
@@ -92,8 +86,8 @@ echo "=== Creating virtual env and installing dependencies ==="
 
 echo "Installing python3-venv and python3-pip if they are missing"
 
-apt update
-apt install -y python3-venv python3-pip
+sudo apt update
+sudo apt install -y python3-venv python3-pip
 
 # Create virtual environment if it doesn't exist, it includes dependencies of both scripts 
 if [ ! -d ".venv" ]; then
